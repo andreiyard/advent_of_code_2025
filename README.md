@@ -1,3 +1,3 @@
-# My solutions to 2025 Advent of Code (https://adventofcode.com/2025)
+# My solutions to 2025 Advent of Code
 
 This year I plan to learn golang by solving AoC puzzles.
