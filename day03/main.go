@@ -86,7 +86,7 @@ func part1(data string) int {
 }
 
 func main() {
-	setupLogging(true)
+	setupLogging(false)
 	filename := getFilenameFromArgs()
 	dataBytes, err := os.ReadFile(filename)
 	check(err)
