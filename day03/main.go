@@ -45,7 +45,9 @@ func setupLogging(debug bool) {
 }
 
 const digits = "987654321"
-const nDigits = 2
+
+// Change to 12 for part 2
+const nDigits = 12
 
 func part1(data string) int {
 	sum := 0
@@ -76,7 +78,7 @@ func part1(data string) int {
 		res := string(arr[:])
 		resInt, err := strconv.Atoi(res)
 		check(err)
-		slog.Debug("line solve", "line", line, "res", resInt)
+		slog.Info("line solve", "line", line, "res", resInt)
 		sum += resInt
 	}
 
