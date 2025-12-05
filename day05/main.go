@@ -4,17 +4,27 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
 
 /* Pseudocode:
+Part1:
 1. Split input to 2 sections (ranges, ids)
 2. Parse ranges to struct with ints
 3. Iterate over ID (or use goroutines)
 4. For each id iterate over all ranges and check if it contains id
 5. if contains stop iterating over ranges and increment sum; if doesn't -> continue.
 6. Return sum (of fresh product IDs)
+
+Part2:
+1. Parse ranges to structs with fields start, end
+2. Sort ranges based on start
+3. Iterate over the sorted ranges
+4. If (current range end > next range start) -> union into on; if not -> save current range and continue to next
+5. In the result we get the slice of new ranges
+6. Sum all new ranges len() and return it
 */
 
 type Range struct {
@@ -110,10 +120,40 @@ outer:
 
 func part2(ranges []Range, ids []int) int {
 	sum := 0
+
+	slices.SortFunc(ranges, func(a, b Range) int {
+		return a.start - b.start
+	})
+	slog.Debug("Sorted ranges", "ranges", ranges)
+
+	newRanges := make([]Range, 1, len(ranges))
+	currentNewRange := 0
+	newRanges[0] = ranges[0]
+
+	for i := 1; i < len(ranges); i++ {
+		if ranges[i].start <= newRanges[currentNewRange].end {
+			// merge ranges
+			if ranges[i].end > newRanges[currentNewRange].end {
+				newRanges[currentNewRange].end = ranges[i].end
+			}
+		} else {
+			newRanges = append(newRanges, ranges[i])
+			currentNewRange++
+		}
+	}
+	slog.Debug("New ranges (after union)", "ranges", newRanges)
+
+	// Sum all range lengths
+	for _, r := range newRanges {
+		l := r.end - r.start + 1
+		sum += l
+		slog.Debug("Adding len of range to sum", "range", r, "len", l, "newSum", sum)
+	}
+
 	return sum
 }
 func main() {
-	setupLogging(true)
+	setupLogging(false)
 	filename := getFilenameFromArgs()
 	dataBytes, err := os.ReadFile(filename)
 	check(err)
