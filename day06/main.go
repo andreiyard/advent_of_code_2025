@@ -1,46 +1,12 @@
 package main
 
 import (
-	"fmt"
+	"github.com/andreiyard/advent_of_code_2025/utils"
 	"log/slog"
 	"os"
 	"strconv"
 	"strings"
 )
-
-/* Pseudocode:
-Part1:
-
-Part2:
-
-*/
-
-func check(err error) {
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %v\n", err)
-		os.Exit(1)
-	}
-}
-
-func getFilenameFromArgs() string {
-	if len(os.Args) < 2 {
-		fmt.Println("Please provide input filename as arg")
-		os.Exit(1)
-	}
-	return os.Args[1]
-}
-
-func setupLogging(debug bool) {
-	level := slog.LevelInfo
-	if debug {
-		level = slog.LevelDebug
-	}
-	opts := &slog.HandlerOptions{
-		Level: level,
-	}
-	logger := slog.New(slog.NewTextHandler(os.Stdout, opts))
-	slog.SetDefault(logger)
-}
 
 // Implement Operator enum with String() method
 type Operator int
@@ -171,7 +137,7 @@ func reduce(numbers []int, op Operator) (result int) {
 	return
 }
 
-func part1(numbers [][]int, operator []Operator) int {
+func calculate(numbers [][]int, operator []Operator) int {
 	sum := 0
 	nColumns := len(numbers)
 
@@ -182,25 +148,21 @@ func part1(numbers [][]int, operator []Operator) int {
 	return sum
 }
 
-func part2(numbers [][]int, operator []Operator) int {
-	sum := 0
-	return sum
-}
 func main() {
-	setupLogging(true)
-	filename := getFilenameFromArgs()
+	utils.SetupLoggingEnv()
+	filename := utils.GetFilenameFromArgs()
 	dataBytes, err := os.ReadFile(filename)
-	check(err)
+	utils.Check(err)
 	data := string(dataBytes)
 	slog.Debug("Got data", "data", data)
 
 	numbers, operators := parse(data)
 	slog.Debug("Parsed input", "numbers", numbers, "operators", operators)
-	result1 := part1(numbers, operators)
+	result1 := calculate(numbers, operators)
 
 	numbers = parsePart2(data)
 	slog.Debug("Parsed input for part 2", "numbers", numbers, "operators", operators)
-	result2 := part1(numbers, operators)
+	result2 := calculate(numbers, operators)
 
 	slog.Warn("part 1 result", "sum", result1)
 	slog.Warn("part 2 result", "sum", result2)
