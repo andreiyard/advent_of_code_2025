@@ -50,6 +50,30 @@ func (c Cells) printGrid() {
 	}
 }
 
+func printPathsGrid(c map[Point]int) {
+	var maxX, maxY int
+	for k, _ := range c {
+		if k.x > maxX {
+			maxX = k.x
+		}
+		if k.y > maxY {
+			maxY = k.y
+		}
+	}
+
+	for i := range maxX + 1 {
+		for j := range maxY + 1 {
+			val := c[Point{i, j}]
+			switch val {
+			case 0:
+				fmt.Print(".")
+			default:
+				fmt.Print(val)
+			}
+		}
+		fmt.Print("\n")
+	}
+}
 func (c Cells) extendBeam(start Point, limitX int) (splitted bool) {
 	// Start for point and check next x point until end of the grid or split
 	for x := start.x; x < limitX; x++ {
@@ -105,7 +129,7 @@ func part1(cells Cells, limitX int) int {
 
 	// while grid contains beams starts
 	for {
-		cells.printGrid()
+		//cells.printGrid()
 		nextBeams := cells.getActiveBeams()
 		slog.Debug("Next beams to check", "beamsStarts", nextBeams)
 		if len(nextBeams) == 0 {
@@ -120,7 +144,75 @@ func part1(cells Cells, limitX int) int {
 			}
 		}
 	}
+	cells.printGrid()
 
+	return sum
+}
+
+func (c Cells) getWithX(x int, value string) Cells {
+	result := make(Cells)
+	for p, val := range c {
+		if p.x == x && val == value {
+			result[p] = val
+		}
+	}
+	return result
+}
+
+func part2(cells Cells, limitX int) int {
+	// go from top to bottom and track possible paths in each moment
+	paths := make(map[Point]int)
+
+	for i := range limitX {
+		for p, _ := range cells.getWithX(i, "V") {
+			// Just set the same paths num as x-1 "|" cell
+			prevPoint := Point{i - 1, p.y}
+			paths[p] = paths[prevPoint]
+		}
+		for p, _ := range cells.getWithX(i, "|") {
+			// if x == 0, then set paths num to 1
+			if i == 0 {
+				paths[p] = 1
+				continue
+			}
+			// If x - 1 cell also contains "|" -> set the same paths num
+			// If next to "V" add path nums to sum of "V" cells on the right and left
+			summarized := 0
+			prevPoint := Point{i - 1, p.y}
+			if cells[prevPoint] == "|" {
+				summarized = paths[prevPoint]
+			}
+			// Check left and right cells (if V -> add to current paths num)
+			checkAndGetPaths := func(point Point) int {
+				if cells[point] == "V" {
+					return paths[point]
+				} else {
+					return 0
+				}
+
+			}
+			leftPoint := Point{i, p.y - 1}
+			summarized += checkAndGetPaths(leftPoint)
+			rightPoint := Point{i, p.y + 1}
+			summarized += checkAndGetPaths(rightPoint)
+
+			paths[p] = summarized
+
+		}
+	}
+	if os.Getenv("DEBUG") != "" {
+		printPathsGrid(paths)
+	}
+	slog.Debug("Calculated paths grid", "paths", paths)
+
+	sum := 0
+	for p, pathsNum := range paths {
+		// Take only last line
+		if p.x == limitX-1 {
+			sum += pathsNum
+		}
+
+	}
 	return sum
 }
 
@@ -136,10 +228,9 @@ func main() {
 	slog.Debug("Parsed input", "cells", cells, "limitX", limitX)
 	result1 := part1(cells, limitX)
 
-	//numbers = parsePart2(data)
-	//slog.Debug("Parsed input for part 2", "numbers", numbers, "operators", operators)
-	//result2 := calculate(numbers, operators)
+	// Take resulting grid from part1
+	result2 := part2(cells, limitX)
 
 	slog.Warn("part 1 result", "sum", result1)
-	//slog.Warn("part 2 result", "sum", result2)
+	slog.Warn("part 2 result", "sum", result2)
 }
