@@ -72,6 +72,7 @@ func (c Cells) extendBeam(start Point, limitX int) (splitted bool) {
 			right := Point{x, start.y + 1}
 			c[left] = "S"
 			c[right] = "S"
+			break
 		} else {
 			c[point] = "|"
 		}
